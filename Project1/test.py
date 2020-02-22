@@ -127,8 +127,9 @@ def addstate(state, states, prev_state):
 
     fname1 = 'NodesInfo.txt'
 
-    with open(fname1, "a") as myfile:
-        myfile.write(str(inter) + " " + "\n" + str(statenum) + " ")
+    with open(fname1, "a+") as myfile:
+        print(str(inter) + " " + str(statenum))
+        myfile.write(str(inter) + " " + str(statenum) + "\n")
 
     statenum = statenum + 1
 
