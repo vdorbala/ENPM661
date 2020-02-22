@@ -1,17 +1,6 @@
 import numpy as np
 
-def print_matrix(state):
-    counter = 0
-    for row in range(0, len(state), 3):
-        if counter == 0 :
-            print("-------------")
-        for element in range(counter, len(state), 3):
-            if element <= counter:
-                print("|", end=" ")
-            print(int(state[element]), "|", end=" ")
-        counter = counter +1
-        print("\n-------------")
-
+# Function to Check if the puzzle is solvable
 def check_solvable(input_state):
     a = input_state.flatten()
     index = np.where(a==0)
@@ -31,9 +20,7 @@ def check_solvable(input_state):
     else:
         return False
 
-def move(state,action):
-        pass
-
+# Function to check for blank tile location
 def BlankTileLocation(state):
     a = state.flatten()
     index = np.where(a==0)
@@ -43,6 +30,7 @@ def BlankTileLocation(state):
 
     return [i, j]  
 
+# Function for swapping two elements in the puzzle
 def swap(state, old_i, old_j, new_i, new_j):
 
     old = state[old_i-1, old_j-1]
@@ -52,6 +40,8 @@ def swap(state, old_i, old_j, new_i, new_j):
     state[new_i-1, new_j-1] = old   
 
     return state
+
+# Function to move the blank tile left
 
 def ActionMoveLeft(state):
 
@@ -65,6 +55,9 @@ def ActionMoveLeft(state):
         status = True
 
     return [status, new_state]
+
+
+# Function to move the blank tile right
 
 def ActionMoveRight(state):
 
@@ -80,6 +73,8 @@ def ActionMoveRight(state):
 
     return [status, new_state]
 
+# Function to move the blank tile Up
+
 def ActionMoveUp(state):
 
     [i, j] = BlankTileLocation(state)
@@ -93,6 +88,8 @@ def ActionMoveUp(state):
         status = True
 
     return [status, new_state]
+
+# Function to move the blank tile Down
 
 def ActionMoveDown(state):
 
@@ -108,6 +105,8 @@ def ActionMoveDown(state):
 
     return [status, new_state]
 
+# Function to check if the current state matches with any of the previous states
+
 def statecheck(state, states):
 
     for key in states.keys():
@@ -115,6 +114,8 @@ def statecheck(state, states):
             return False
     else:
         return True
+
+# Function to add a state and its parent state to the list of states
 
 def addstate(state, states, prev_state):
 
@@ -135,6 +136,7 @@ def addstate(state, states, prev_state):
 
     return states
 
+# Function to compute the states
 
 def compute_states(init_state):
 
@@ -198,6 +200,8 @@ def compute_states(init_state):
 
     return states
 
+# Function to generate the path
+
 def generate_path(states, inter):
     key = str(goal_state.flatten())
     fname = 'nodePath.txt'
@@ -213,6 +217,8 @@ def generate_path(states, inter):
     np.savetxt(fname,parentarr, fmt = "%d")
 
     return 0
+
+# Main function which runs a loop upto 25 times to find the goal state.
 
 def main():
     global states, stateaction, inter
@@ -232,7 +238,7 @@ def main():
 
                 generate_path(states, inter)
 
-        if inter>15:
+        if inter>25:
             break
 
     statearr = []
