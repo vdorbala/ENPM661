@@ -3,6 +3,47 @@ import sys
 import cv2
 import pylsd
 
+def check_rectangle(point):
+    
+    x=point[0]
+    y=point[1]
+
+    
+    coeff1=np.array(np.polyfit([95,100],[30,39],1))
+    coeff2=np.array(np.polyfit([100,35],[39,77],1))
+    coeff3=np.array(np.polyfit([35,30],[77,68],1))
+    coeff4=np.array(np.polyfit([30,95],[68,30],1))
+    line1 = round(y - coeff1[0] * x - coeff1[1])
+    line2 = round(y - coeff2[0] * x - coeff2[1])
+    line3 = round(y - coeff3[0] * x - coeff3[1])
+    line4 = round(y - coeff4[0] * x - coeff4[1])
+
+    if line1 >=0 and line2<=0 and line3<=0 and  line4>=0:
+        return True
+    else:
+        return False
+
+
+
+def check_rhombus(point):
+    x=point[0]
+    y=point[1]
+
+    coeff1=np.array(np.polyfit([225,250],[10,25],1))
+    coeff2=np.array(np.polyfit([250,225],[25,40],1))
+    coeff3=np.array(np.polyfit([225,200],[40,25],1))
+    coeff4=np.array(np.polyfit([200,225],[25,10],1))
+    line1 = round(y - coeff1[0] * x - coeff1[1])
+    line2 = round(y - coeff2[0] * x - coeff2[1])
+    line3 = round(y - coeff3[0] * x - coeff3[1])
+    line4 = round(y - coeff4[0] * x - coeff4[1])
+
+    if line1 >=0 and line2<=0 and line3<=0 and  line4>=0:
+        return True
+    else:
+        return False
+
+
 def check_valid(initial_pos,final_pos):
 	pass
 
