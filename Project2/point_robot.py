@@ -5,12 +5,9 @@ import time
 import math
 
 # Defining the workspace
-
 def space():
 
-    increase = 10
-
-    blank_image = 150*np.ones(shape=[200, 300, 1], dtype=np.uint8)
+    blank_image = 150*np.ones(shape=[201, 301, 1], dtype=np.uint8)
 
     cv2.circle(blank_image, (225, 50), 25, (0, 255, 0), 2)
 
@@ -28,14 +25,13 @@ def space():
     return blank_image
 
 # The Implementation of the Djikstra Algorithm
-
 def algorithm(image,xi,yi, goal):
 
     visited=[]
     queue=[]
     visited_info=[]
     nodes_visited=[]
-    cost_map=np.inf*np.ones((200,300))
+    cost_map=np.inf*np.ones((300,400))
     initial_pos = np.array([[xi, yi],[0,0]])
     goal_nodes = []
     pos_idx = 0
@@ -46,9 +42,12 @@ def algorithm(image,xi,yi, goal):
     cost_map[initial_pos[0,0],initial_pos[0,1]]=0
 
 
-    time = 1
+    goal_time = 1
 
     while queue:
+
+        if pos_idx%1234==0:
+            print("--- {} seconds ---".format(time.time() - start_time))
 
         min=0
 
@@ -77,18 +76,22 @@ def algorithm(image,xi,yi, goal):
 
                 image[200 - new_position[1], new_position[0]]=0
                 resized_new_1 = cv2.resize(image, (640,480), fx=4, fy=4, interpolation=cv2.INTER_CUBIC)
-                cv2.imshow("Figure", resized_new_1)
-                cv2.waitKey(1)
+
+                # Condition used to make plotting faster
+                if (pos_idx%50)==0:
+                    print("--- {} seconds ---".format(time.time() - start_time))
+                    cv2.imshow("Figure", resized_new_1)
+                    cv2.waitKey(10)
 
                 new_cost=cost_map[current_position[0],current_position[1]]+cost
-                # print(new_position)
+
                 if new_position==goal:
-                    print("Reached {} time".format(time))
-                    time = time + 1
+                    print("Reached {} time".format(goal_time))
+                    goal_time = goal_time + 1
                     goal_nodes.append([current_node, new_cost])
 
-                if time == 9:
-                    return goal_nodes, visited_info
+                if goal_time == 9:
+                    return goal_nodes, visited_info, resized_new_1
 
                 
                 if str(new_position) not in nodes_visited and cost_map[new_position[0],new_position[1]]>new_cost:
@@ -323,7 +326,6 @@ def check_movement(position, max_x= 300, max_y=200):
     checkall = check0 or check1 or check2 or check3 or check4 or check5
 
     if checkall==True:
-        print("There was an obstacle!")
         return True
 
     else:
@@ -348,28 +350,39 @@ def find_final_goal(goal_nodes, initial_pos, backinfo, image):
             if str(parent)==str(backinfo[i][0]):
                 new_node = backinfo[i]
                 
-                image[ 200 - new_node[1][1], new_node[1][0]]= 250
+                # write_to_image(image, new_node)
+
+                image[ 200 - new_node[1][1], new_node[1][0]] = 250
                 resized_new_1 = cv2.resize(image, (640,480), fx=4, fy=4, interpolation=cv2.INTER_CUBIC)
                 cv2.imshow("Figure", resized_new_1)
                 cv2.waitKey(100)
-                time.sleep(3)
+                time.sleep(0.1)
+
                 steps = steps+1
 
         current = new_node[0]
         parent=new_node[1]
 
+    print('\a')
+    time.sleep(10)
     print("Number of steps taken are {}".format(steps))
 
+# Function to write a circle to an image
+def write_to_image(image, point):
+    x = point[1][0]
+    max_y = 200
+    y = 200 - point[1][1]
+
+    cv2.circle(image, (x, y), 1, (255, 255, 255), 2)
 
 
 def main():
 
+    global start_time
     img = space()
 
     max_x = 300
     max_y = 200
-
-    start_time = time.time()
 
     # Taking User Input
     xi = int(input("Please enter the input x coordinate of the point robot!"))
@@ -386,9 +399,10 @@ def main():
 
     # Checking if the point coordinates are valid
 
-    valid = check_movement(initial_pos, max_x, max_y)
+    valid_init = check_movement(initial_pos, max_x, max_y)
+    valid_final = check_movement(goal, max_x, max_y)
 
-    if valid != False:
+    if valid_init and valid_final != False:
         print("Please enter values that do not lie inside a shape!")
         return 0
     else:
@@ -403,6 +417,7 @@ def main():
     print("--- {} seconds ---".format(time.time() - start_time))
 
 if __name__ == '__main__':
+    start_time = time.time()
     main()
 
 
