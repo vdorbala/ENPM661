@@ -1,3 +1,4 @@
+from __future__ import division
 import numpy as np
 import sys
 import cv2
@@ -10,26 +11,32 @@ def space(distance):
 
     cv2.circle(blank_image, (225, 50), 25 + distance, (0, 255, 0), 2)
 
-    cv2.ellipse(blank_image, (150,100), (40 + distance, 20 + distance), 
-           0, 0, 360, (0,255,0), 2) 
+    cv2.ellipse(blank_image, (150,100), (40 + distance, 20 + distance), 0, 0, 360, (0,255,0), 2) 
 
-    rotrec = np.array([[[95,170],[95+5,170-9],[95+5-65,170-9 -38],[95-65,170-38]]], np.int32)
+    rotrec = np.array([[[95,170], [95+5,170-9], [95+5-65,170-9 -38], [95-65,170-38]]], np.int32)
 
     weird_shape = np.array([[[25, 15], [75, 15], [100, 50], [75, 80], [50, 50], [20, 80]]], np.int32)
     
     rhombus = np.array([[[225,190], [250, 175], [225, 160], [200, 175]]], np.int32)
 
-    coeff1=np.array(np.polyfit([95,100],[30,39],1))
-    coeff2=np.array(np.polyfit([100,35],[39,77],1))
-    coeff3=np.array(np.polyfit([35,30],[77,68],1))
-    coeff4=np.array(np.polyfit([30,95],[68,30],1))
-    
-
     cv2.polylines(blank_image, rotrec, True, (0,255,0),2)
+
     cv2.polylines(blank_image, weird_shape, True, (0,255,0) ,2)
+
     cv2.polylines(blank_image, rhombus, True, (0,255,0), 2)
 
+    rotrec1 = np.array([[[95 + 5 + (distance)/2, 170-9], [95+(distance/2), 170-13.5], [95, 170 + (distance)/2], [95 + (distance)/2, 170 + 2*np.sqrt(distance)]]], np.int32)
+
+    rotrec2 = np.array([[[95 + (distance/2), 170-13.5], [95+5-65, 170-9 -38], [95+5-65 - (distance/2), 170-9-38 - (distance/2)], [95 + (distance/2), 170 - 13.5]]], np.int32)
+
+    # rotrec3 = np.array([[[],[],[],[]]], np.int32)
+
+    # rotrec4 = np.array([[[],[],[],[]]], np.int32)
+    cv2.polylines(blank_image, rotrec1, True, (0,255,0), 2)
+    cv2.polylines(blank_image, rotrec2, True, (0,255,0), 2)
+
     return blank_image
+
 
 def algorithm(image,xi,yi, goal, radius, clearance):
 
@@ -362,7 +369,7 @@ def find_final_goal(goal_nodes, initial_pos, backinfo, image):
                 resized_new_1 = cv2.resize(image, (640,480), fx=4, fy=4, interpolation=cv2.INTER_CUBIC)
                 cv2.imshow("Figure", resized_new_1)
                 cv2.waitKey(100)
-                time.sleep(3)
+                time.sleep(0.5)
                 steps = steps+1
 
         current = new_node[0]
@@ -375,15 +382,25 @@ def main():
     max_x = 300
     max_y = 200
 
-    xi = int(input("Please enter the input x coordinate of the point robot!"))
-    yi = int(input("Please enter the input y coordinate of the point robot!"))
+    # Taking user Inputs
+    xi = 5
+    yi = 5
+    xf = 295
+    yf = 195
 
-    xf = int(input("Please enter the input x coordinate of the point robot!"))
-    yf = int(input("Please enter the input y coordinate of the point robot!"))
+    radius = 5
 
-    radius = int(input("Please enter the radius of the robot!"))
+    clearance = 5
 
-    clearance = int(input("Please enter the clearance of the robot!"))
+    # xi = int(input("Please enter the input x coordinate of the point robot!"))
+    # yi = int(input("Please enter the input y coordinate of the point robot!"))
+
+    # xf = int(input("Please enter the input x coordinate of the point robot!"))
+    # yf = int(input("Please enter the input y coordinate of the point robot!"))
+
+    # radius = int(input("Please enter the radius of the robot!"))
+
+    # clearance = int(input("Please enter the clearance of the robot!"))
 
     distance = radius + clearance
 
@@ -393,13 +410,12 @@ def main():
 
     initial_pos = np.array([xi, yi])
 
-    initial_pos = np.array([xi, yi])
-
     print("Chosen initial and final coordinates are, [{} {}] and [{} {}]".format(xi, yi, xf, yf))
 
-    valid = check_movement(initial_pos, distance, max_x, max_y)
+    valid_init = check_movement(initial_pos, distance, max_x, max_y)
+    valid_final = check_movement(goal, distance, max_x, max_y)
 
-    if valid != False:
+    if valid_init and valid_final != False:
         print("Please enter values that do not lie inside a shape!")
         return 0
     else:
