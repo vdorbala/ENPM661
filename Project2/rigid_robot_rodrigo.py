@@ -111,14 +111,12 @@ def new_weird_points(distance):
 
 def space(distance):
 
-    
+    blank_image = 150*np.ones(shape=[205, 305, 1], dtype=np.uint8)
 
-    blank_image = 150*np.ones(shape=[200, 300, 1], dtype=np.uint8)
-
-    cv2.circle(blank_image, (225, 50), 25+distance, (0, 255, 0), 2)
+    cv2.circle(blank_image, (225, 50), 25+distance, (255, 255, 255), -1)
 
     cv2.ellipse(blank_image, (150,100), (40+distance, 20+distance), 
-           0, 0, 360, (0,255,0),  thickness=2, lineType=8, shift=0) 
+           0, 0, 360, (255,255,255),  thickness=-1, lineType=8, shift=0) 
 
     x1,x2,x3,x4,y1,y2,y3,y4=new_rec_points(distance)
     rotrec = np.array([[[x1,200-y1],[x2,200-y2],[x3,200-y3],[x4,200-y4]]], np.int32)
@@ -128,15 +126,43 @@ def space(distance):
     rhombus = np.array([[[x1,200-y1], [x2, 200-y2], [x3,200-y3], [x4, 200-y4]]], np.int32)
     cv2.polylines(blank_image, rhombus, True, (0,255,0), 2)
 
-
     x1,x2,x3,x4,x5,x6,y1,y2,y3,y4,y5,y6=new_weird_points(distance)
 
-    print(x1,x2,x3,x4,x5,x6,y1,y2,y3,y4,y5,y6)
     weird_shape = np.array([[[x1,200-y1],[x2,200-y2],[x3,200-y3],[x4,200-y4],[x5,200-y5],[x6,200-y6]]],np.int32)
+
     cv2.polylines(blank_image, weird_shape, True, (0,255,0) ,2)
+
+    cv2.fillConvexPoly(blank_image, rotrec, 255)
+
+    cv2.fillConvexPoly(blank_image, weird_shape, 255)
+
+    cv2.fillConvexPoly(blank_image, rhombus, 255)
+
+
+    cv2.circle(blank_image, (225, 50), 25, (0, 0, 0), -1)
+
+    cv2.ellipse(blank_image, (150,100), (40, 20), 0, 0, 360, (0,0,0), -1)
+
+    rotrec = np.array([[[95,170], [95+5,170-9], [95+5-65,170-9 -38], [95-65,170-38]]], np.int32)
+
+    weird_shape = np.array([[[25, 15], [75, 15], [100, 50], [75, 80], [50, 50], [20, 80]]], np.int32)
     
+    rhombus = np.array([[[225,190], [250, 175], [225, 160], [200, 175]]], np.int32)
+
+    cv2.polylines(blank_image, rotrec, True, (0,255,0),2)
+
+    cv2.polylines(blank_image, weird_shape, True, (0,255,0) ,2)
+
+    cv2.polylines(blank_image, rhombus, True, (0,255,0), 2)
+
+    cv2.fillConvexPoly(blank_image, rotrec, 0)
+
+    cv2.fillConvexPoly(blank_image, weird_shape, 0)
+
+    cv2.fillConvexPoly(blank_image, rhombus, 0)
 
     return blank_image
+
 
 # The Implementation of the Djikstra Algorithm
 
@@ -187,7 +213,11 @@ def algorithm(image,xi,yi, goal,distance):
             if new_position is not False:
 
                 image[200 - new_position[1], new_position[0]]=0
+                
                 resized_new_1 = cv2.resize(image, (640,480), fx=1, fy=1, interpolation=cv2.INTER_CUBIC)
+
+                fgmask = fgbg.apply(resized_new_1)
+
                 cv2.imshow("Figure", resized_new_1)
                 cv2.waitKey(1)
 
@@ -424,7 +454,6 @@ def check_if_not_in_image(position, max_x= 300, max_y=200):
 def check_movement(position, distance, max_x= 300, max_y=200):
 
     check0 = check_if_not_in_image(position)
-
     check1 = check_poly(position, distance, max_x, max_y)
     check2 = check_rectangle(position,distance)
     check3 = check_circle(position,distance)
@@ -433,10 +462,7 @@ def check_movement(position, distance, max_x= 300, max_y=200):
 
     checkall = check0 or check1 or check2 or check3 or check4 or check5
 
-    
-
     if checkall==True:
-        print("There was an obstacle!")
         return True
 
     else:
@@ -476,23 +502,28 @@ def find_final_goal(goal_nodes, initial_pos, backinfo, image):
 
 
 def main():
-
-    
-
     max_x = 300
     max_y = 200
 
     start_time = time.time()
 
-    # Taking User Input
-    xi = int(input("Please enter the input x coordinate of the rigid robot!"))
-    yi = int(input("Please enter the input y coordinate of the rigid robot!"))
+    # Taking user Inputs
+    xi = 5
+    yi = 5
+    xf = 295
+    yf = 195
 
-    xf = int(input("Please enter the input x coordinate of the rigid robot!"))
-    yf = int(input("Please enter the input y coordinate of the rigid robot!"))
+    radius = 5
+    clearance = 5
 
-    radius = int(input("Please enter the input radius of the rigid robot!"))
-    clearance = int(input("Please enter the input y clearance of the rigid robot!"))
+    # xi = int(input("Please enter the input x coordinate of the rigid robot!"))
+    # yi = int(input("Please enter the input y coordinate of the rigid robot!"))
+
+    # xf = int(input("Please enter the input x coordinate of the rigid robot!"))
+    # yf = int(input("Please enter the input y coordinate of the rigid robot!"))
+
+    # radius = int(input("Please enter the input radius of the rigid robot!"))
+    # clearance = int(input("Please enter the input y clearance of the rigid robot!"))
 
     goal=[xf,yf]
 
@@ -525,4 +556,7 @@ def main():
     print("--- {} seconds ---".format(time.time() - start_time))
 
 if __name__ == '__main__':
+
+    fgbg = cv2.bgsegm.createBackgroundSubtractorMOG()
+    
     main()
