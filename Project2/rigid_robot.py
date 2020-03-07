@@ -225,10 +225,10 @@ def algorithm(image,xi,yi, goal,distance, start_time):
                 resized_new_1 = cv2.resize(image, (640,480), fx=1, fy=1, interpolation=cv2.INTER_CUBIC)
 
                 # Condition used to make plotting faster
-                if (pos_idx%50)==0:
+                if (pos_idx%200)==0:
                     print("--- {} seconds ---".format(time.time() - start_time))
                     cv2.imshow("Figure", resized_new_1)
-                    cv2.waitKey(10)
+                    cv2.waitKey(1000)
 
                 new_cost=cost_map[current_position[0],current_position[1]]+cost
 
@@ -253,7 +253,7 @@ def algorithm(image,xi,yi, goal,distance, start_time):
                             queue.pop(len(queue)-1)
             else:
                 continue
-    return resized_new_1
+    return None
 
 
 # Function to check the next move and output the cost of the movement along with the new position.
@@ -507,15 +507,19 @@ def find_final_goal(goal_nodes, initial_pos, backinfo, image):
                 resized_new_1 = cv2.resize(image, (640,480), fx=4, fy=4, interpolation=cv2.INTER_CUBIC)
                 cv2.imshow("Figure", resized_new_1)
                 cv2.waitKey(100)
-                time.sleep(0.5)
+                time.sleep(0.2)
                 steps = steps+1
 
         current = new_node[0]
         parent=new_node[1]
 
+    cv2.imshow("Figure", resized_new_1)
+    cv2.waitKey(0)
+
+    # cv2.destroyAllWindows()
     print("Number of steps taken are {}".format(steps))
 
-    return 0
+    return None
 
 def main():
     max_x = 300
@@ -571,7 +575,8 @@ def main():
     # Finding and backtracing the path.
     find_final_goal(goal_nodes, initial_pos, backinfo, img)
 
-    print("Total time taken is {} seconds ---".format(time.time() - start_time))
+
+    # print("Total time taken is {} seconds ---".format(time.time() - start_time))
 
     return 0
 

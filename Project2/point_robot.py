@@ -334,6 +334,7 @@ def check_movement(position, max_x= 300, max_y=200):
 # Function for finding the goal with the least cost and backtracing the path from the goal to the input
 def find_final_goal(goal_nodes, initial_pos, backinfo, image):
 
+    print("Finding best path now!")
     goal_nodes = np.array(goal_nodes)
     min_idx = np.argmin(goal_nodes[:,1])
     
