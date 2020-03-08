@@ -3,6 +3,7 @@ import sys
 import cv2
 import time
 import math
+import argparse
 
 # Defining the workspace
 def space():
@@ -25,7 +26,7 @@ def space():
     return blank_image
 
 # The Implementation of the Djikstra Algorithm
-def algorithm(image,xi,yi, goal):
+def algorithm(image, xi, yi, goal, visual):
 
     visited=[]
     queue=[]
@@ -45,9 +46,6 @@ def algorithm(image,xi,yi, goal):
     goal_time = 1
 
     while queue:
-
-        if pos_idx%1234==0:
-            print("--- {} seconds ---".format(time.time() - start_time))
 
         min=0
 
@@ -78,10 +76,14 @@ def algorithm(image,xi,yi, goal):
                 resized_new_1 = cv2.resize(image, (640,480), fx=4, fy=4, interpolation=cv2.INTER_CUBIC)
 
                 # Condition used to make plotting faster
-                # if (pos_idx%50)==0:
-                #     print("--- {} seconds ---".format(time.time() - start_time))
-                #     cv2.imshow("Figure", resized_new_1)
-                #     cv2.waitKey(10)
+                if visual!=None:
+                    if (pos_idx%50)==0:
+                        print("--- {} seconds ---".format(time.time() - start_time))
+                        cv2.imshow("Figure", resized_new_1)
+                        cv2.waitKey(10)
+                else:
+                    if pos_idx%100==0:
+                        print("--- {} seconds ---".format(time.time() - start_time))
 
                 new_cost=cost_map[current_position[0],current_position[1]]+cost
 
@@ -373,6 +375,14 @@ def find_final_goal(goal_nodes, initial_pos, backinfo, image):
 def main():
 
     global start_time
+
+    args = parser.parse_args()
+
+    visual = args.viz
+
+    if visual==None:
+        print("No visualization selected! There wil only be a plot at the end! If you want visuals, add --viz True")
+
     img = space()
 
     max_x = 300
@@ -410,7 +420,7 @@ def main():
         print(" Valid coordinates entered!")
 
     # Passing the coordinates and the goal to the Djikstra algorithm
-    goal_nodes, backinfo = algorithm(img,xi,yi,goal)
+    goal_nodes, backinfo = algorithm(img,xi,yi,goal, visual)
 
     # Finding and backtracing the path.
     find_final_goal(goal_nodes, initial_pos, backinfo, img)
@@ -419,6 +429,10 @@ def main():
 
 if __name__ == '__main__':
     start_time = time.time()
+
+    parser = argparse.ArgumentParser(description='Parsing arguments')
+    parser.add_argument('--viz', help='For visualization set this to true')
+
     main()
 
 
