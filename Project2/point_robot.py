@@ -78,10 +78,10 @@ def algorithm(image,xi,yi, goal):
                 resized_new_1 = cv2.resize(image, (640,480), fx=4, fy=4, interpolation=cv2.INTER_CUBIC)
 
                 # Condition used to make plotting faster
-                if (pos_idx%50)==0:
-                    print("--- {} seconds ---".format(time.time() - start_time))
-                    cv2.imshow("Figure", resized_new_1)
-                    cv2.waitKey(10)
+                # if (pos_idx%50)==0:
+                #     print("--- {} seconds ---".format(time.time() - start_time))
+                #     cv2.imshow("Figure", resized_new_1)
+                #     cv2.waitKey(10)
 
                 new_cost=cost_map[current_position[0],current_position[1]]+cost
 
@@ -91,7 +91,7 @@ def algorithm(image,xi,yi, goal):
                     goal_nodes.append([current_node, new_cost])
 
                 if goal_time == 9:
-                    return goal_nodes, visited_info, resized_new_1
+                    return goal_nodes, visited_info
 
                 
                 if str(new_position) not in nodes_visited and cost_map[new_position[0],new_position[1]]>new_cost:
@@ -105,7 +105,7 @@ def algorithm(image,xi,yi, goal):
                             queue.pop(len(queue)-1)
             else:
                 continue
-    return None
+    return goal_nodes, visited_info
 
 
 # Function to check the next move and output the cost of the movement along with the new position.
@@ -217,6 +217,9 @@ def check_rectangle(point):
     line3 = round(y - coeff3[0] * x - coeff3[1])
     line4 = round(y - coeff4[0] * x - coeff4[1])
 
+
+    # Half Plane Equations
+
     if line1 >=0 and line2<=0 and line3<=0 and  line4>=0:
         return True
     else:
@@ -235,6 +238,8 @@ def check_rhombus(point):
     line2 = round(y - coeff2[0] * x - coeff2[1])
     line3 = round(y - coeff3[0] * x - coeff3[1])
     line4 = round(y - coeff4[0] * x - coeff4[1])
+
+    # Half Plane Equations
 
     if line1 >=0 and line2<=0 and line3<=0 and  line4>=0:
         return True
@@ -279,9 +284,9 @@ def check_poly(point, max_x=300, max_y=200):
     
     coeff6 = np.polyfit([20, 25], [120, 185], 1)
 
-    coeff51 = np.polyfit([50,25],[150,185],1)
-    coeff52 = np.polyfit([50,75],[150,185],1)
-    coeff53 = np.polyfit([50,100],[150,150],1)
+    # coeff51 = np.polyfit([50,25],[150,185],1)
+    # coeff52 = np.polyfit([50,75],[150,185],1)
+    # coeff53 = np.polyfit([50,100],[150,150],1)
 
     line1 = round(y - coeff1[0]*x - coeff1[1])
     line2 = round(y - coeff2[0]*x - coeff2[1])
@@ -290,9 +295,9 @@ def check_poly(point, max_x=300, max_y=200):
     line5 = round(y - coeff5[0]*x - coeff5[1])
     line6 = round(y - coeff6[0]*x - coeff6[1])
 
-    line51 = round(y - coeff51[0]*x - coeff51[1])
-    line52 = round(y - coeff52[0]*x - coeff52[1])
-    line53 = round(y - coeff53[0]*x - coeff53[1])
+    # line51 = round(y - coeff51[0]*x - coeff51[1])
+    # line52 = round(y - coeff52[0]*x - coeff52[1])
+    # line53 = round(y - coeff53[0]*x - coeff53[1])
 
    # Checking the half planes if the point lies inside or outside. 
 
@@ -350,32 +355,20 @@ def find_final_goal(goal_nodes, initial_pos, backinfo, image):
         for i in range(len(backinfo)):
             if str(parent)==str(backinfo[i][0]):
                 new_node = backinfo[i]
-                
-                # write_to_image(image, new_node)
-
                 image[ 200 - new_node[1][1], new_node[1][0]] = 250
-                resized_new_1 = cv2.resize(image, (640,480), fx=4, fy=4, interpolation=cv2.INTER_CUBIC)
-                cv2.imshow("Figure", resized_new_1)
-                cv2.waitKey(100)
-                time.sleep(0.1)
-
                 steps = steps+1
 
         current = new_node[0]
         parent=new_node[1]
 
-    print('\a')
-    time.sleep(10)
+    # Showing the image
+    resized_new_1 = cv2.resize(image, (640,480), fx=4, fy=4, interpolation=cv2.INTER_CUBIC)
+    cv2.imshow("Figure", resized_new_1)
+    cv2.waitKey(0)
+    
     print("Number of steps taken are {}".format(steps))
 
-# Function to write a circle to an image
-def write_to_image(image, point):
-    x = point[1][0]
-    max_y = 200
-    y = 200 - point[1][1]
-
-    cv2.circle(image, (x, y), 1, (255, 255, 255), 2)
-
+    return 0
 
 def main():
 
@@ -385,12 +378,19 @@ def main():
     max_x = 300
     max_y = 200
 
-    # Taking User Input
-    xi = int(input("Please enter the input x coordinate of the point robot!"))
-    yi = int(input("Please enter the input y coordinate of the point robot!"))
 
-    xf = int(input("Please enter the input x coordinate of the point robot!"))
-    yf = int(input("Please enter the input y coordinate of the point robot!"))
+    # Defaults
+    xi = 5
+    yi = 5
+    xf = 295
+    yf = 195
+
+    # # Taking User Input
+    # xi = int(input("Please enter the input x coordinate of the point robot!"))
+    # yi = int(input("Please enter the input y coordinate of the point robot!"))
+
+    # xf = int(input("Please enter the input x coordinate of the point robot!"))
+    # yf = int(input("Please enter the input y coordinate of the point robot!"))
 
     goal=[xf,yf]
 
@@ -399,11 +399,11 @@ def main():
     print("Chosen initial and final coordinates are, [{} {}] and [{} {}]".format(xi, yi, xf, yf))
 
     # Checking if the point coordinates are valid
+    valid = check_movement(initial_pos, max_x, max_y)
 
-    valid_init = check_movement(initial_pos, max_x, max_y)
-    valid_final = check_movement(goal, max_x, max_y)
+    valid1 = check_movement(goal, max_x, max_y)
 
-    if valid_init and valid_final != False:
+    if (valid and valid1) != False:
         print("Please enter values that do not lie inside a shape!")
         return 0
     else:

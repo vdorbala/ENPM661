@@ -9,6 +9,29 @@ def space(distance):
 
     blank_image = 150*np.ones(shape=[202, 302, 1], dtype=np.uint8)
 
+    # Drawing the boundary
+
+    boundrec1 =  np.array([[[0, 0],[0, distance],[300, distance],[300,0]]], np.int32)
+    boundrec2 =  np.array([[[0, 200],[0, 200 - distance],[300, 200 - distance],[300,200]]], np.int32)
+    boundrec3 =  np.array([[[0, 0],[distance, 0],[distance, 200],[0,200]]], np.int32)
+    boundrec4 =  np.array([[[300 - distance, 0],[300, 0],[300, 200],[300 - distance, 300 - distance]]], np.int32)
+
+    cv2.polylines(blank_image, boundrec1, True, (0,255,0), 1)
+
+    cv2.fillPoly(blank_image, boundrec1, 255)
+
+    cv2.polylines(blank_image, boundrec2, True, (0,255,0), 1)
+
+    cv2.fillPoly(blank_image, boundrec2, 255)
+
+    cv2.polylines(blank_image, boundrec3, True, (0,255,0), 1)
+
+    cv2.fillPoly(blank_image, boundrec3, 255)
+
+    cv2.polylines(blank_image, boundrec4, True, (0,255,0), 1)
+
+    cv2.fillPoly(blank_image, boundrec4, 255)
+
     # Drawing the outer shapes
 
     cv2.circle(blank_image, (225, 50), 25+distance, (255, 255, 255), -1)
@@ -292,7 +315,6 @@ def check_move(act_number, current_pos,distance):
             new_position=[temp_pos_x,temp_pos_y]  
 
     if act_number==4:
-        # Bottom Right ACTION
         temp_pos_x = temp_pos_x + 1
         temp_pos_y = temp_pos_y + 1
         cost=math.sqrt(2)
@@ -304,8 +326,6 @@ def check_move(act_number, current_pos,distance):
 
 
     if act_number==5:
-        # Bottom ACTION
-        # temp_pos_x = temp_pos_x + 1
         temp_pos_y = temp_pos_y + 1
         cost=1
         new_position=[temp_pos_x,temp_pos_y]
@@ -315,7 +335,6 @@ def check_move(act_number, current_pos,distance):
             new_position=[temp_pos_x,temp_pos_y]  
 
     if act_number==6:
-        # Bottom Left ACTION
         temp_pos_x = temp_pos_x - 1
         temp_pos_y = temp_pos_y + 1
         cost=math.sqrt(2)
@@ -325,9 +344,7 @@ def check_move(act_number, current_pos,distance):
         else:
             new_position=[temp_pos_x,temp_pos_y]  
     if act_number==7:
-        # Left ACTION
         temp_pos_x = temp_pos_x - 1
-        # temp_pos_y = temp_pos_y - 1
         cost=1
         new_position=[temp_pos_x,temp_pos_y]
         if check_movement(new_position,distance)==True:
@@ -375,7 +392,6 @@ def check_rectangle(point,distance):
 # Function to check if the points lie inside or outside the rhombus
 def check_rhombus(point,distance):
     
-
     x=point[0]
     y=point[1]
 
@@ -502,23 +518,18 @@ def find_final_goal(goal_nodes, initial_pos, backinfo, image):
         for i in range(len(backinfo)):
             if str(parent)==str(backinfo[i][0]):
                 new_node = backinfo[i]
-                
                 image[ 200 - new_node[1][1], new_node[1][0]]= 250
-                resized_new_1 = cv2.resize(image, (640,480), fx=4, fy=4, interpolation=cv2.INTER_CUBIC)
-                cv2.imshow("Figure", resized_new_1)
-                cv2.waitKey(100)
-                time.sleep(0.2)
                 steps = steps+1
 
         current = new_node[0]
         parent=new_node[1]
 
+
+    resized_new_1 = cv2.resize(image, (640,480), fx=4, fy=4, interpolation=cv2.INTER_CUBIC)
     cv2.imshow("Figure", resized_new_1)
     cv2.waitKey(0)
 
-    # cv2.destroyAllWindows()
     print("Number of steps taken are {}".format(steps))
-
     return None
 
 def main():
@@ -538,6 +549,8 @@ def main():
     radius = 5
     clearance = 5
 
+    distance = radius + clearance
+
     # xi = int(input("Please enter the input x coordinate of the rigid robot!"))
     # yi = int(input("Please enter the input y coordinate of the rigid robot!"))
 
@@ -549,13 +562,18 @@ def main():
 
     goal=[xf,yf]
 
+    # Accounting for distance from the boudaries, so the robot starts inside the workspace.
+    xi = xi + distance
+    yi = yi + distance
+
+    xf = xf - distance
+    yf = yf - distance
+
     initial_pos = np.array([xi, yi])
     
     print("Chosen initial and final coordinates are, [{} {}] and [{} {}]".format(xi, yi, xf, yf))
 
     print("Chosen radius and clearance are, {} and {}".format(radius, clearance))
-
-    distance = radius + clearance
 
     img = space(distance)
 
@@ -563,7 +581,9 @@ def main():
 
     valid = check_movement(initial_pos,distance, max_x, max_y)
 
-    if valid != False:
+    valid1 = check_movement(goal,distance, max_x, max_y)
+
+    if (valid and valid1) != False:
         print("Please enter values that do not lie inside a shape!")
         return 0
     else:
@@ -575,8 +595,7 @@ def main():
     # Finding and backtracing the path.
     find_final_goal(goal_nodes, initial_pos, backinfo, img)
 
-
-    # print("Total time taken is {} seconds ---".format(time.time() - start_time))
+    print("Total time taken is {} seconds ---".format(time.time() - start_time))
 
     return 0
 
