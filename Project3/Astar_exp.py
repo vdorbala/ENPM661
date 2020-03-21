@@ -569,9 +569,6 @@ def main(goal):
 
     visual = args.viz
 
-    if visual==None:
-        print("No visualization selected! There will only be a plot at the end! If you want visuals, add --viz True")
-
     max_x = 300
     max_y = 200
 
@@ -583,6 +580,13 @@ def main(goal):
     xi = 50
     yi = 30
     thetai = 60
+
+    xf = input("Enter input X coordinate:  ")
+    yf = input("Enter input Y coordinate:  ")
+    thetaf = input("Enter input theta:  ")
+
+    if visual==None:
+        print("No visualization selected! There will only be a plot at the end! If you want visuals, add --viz True")
 
     xf = goal[0]
     yf = goal[1]
@@ -628,10 +632,14 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Parsing arguments')
     parser.add_argument('--viz', help='For visualization set this to true')
 
-    # Goal coordinates and angle
+    # Default goal coordinates and angle
     xf = 150
     yf = 150
     thetaf = 0
+
+    xf = input("Enter Goal X coordinate:  ")
+    yf = input("Enter Goal Y coordinate:  ")
+    thetaf = input("Enter Goal theta:  ")
 
     goal_pos = [xf, yf, thetaf]
 

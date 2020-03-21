@@ -24,3 +24,6 @@ With visuzalization, the script takes about 1.5 hours to run.
 Without visualization, it takes only around 25 minutes.
 
 The "simulation_output.mp4" video contains the simulation video of A Star.
+
+Link to Github repo:
+https://github.com/vdorbala/ENPM661/tree/master/Project3
