@@ -70,7 +70,7 @@ def differential_drive(RPM,position):
     dt=0.1
     x=position[0]
     y=position[1]
-    theta=3.14*position[2]/180
+    theta=3.14*position[2]/180*30
 
     ul=RPM[0]
     ur=RPM[1]
@@ -163,7 +163,7 @@ def eucdist(current_pos, goal_pos):
     
     xi = current_pos[0]*euc
     yi = current_pos[1]*euc
-    ang = current_pos[2]*(np.pi/6)
+    ang = 3.14*current_pos[2]*(np.pi/6)/180
 
     pos_cur = np.array([xi,yi])
 
@@ -278,7 +278,7 @@ def algorithm(image,initial_pos, goal,distance, start_time, visual,actions):
         
         # Converted to string for easy comparison.
         nodes_visited.append(str(current_node[0]))
-
+        print(current_position)
 
         for action in actions:
 
@@ -292,7 +292,7 @@ def algorithm(image,initial_pos, goal,distance, start_time, visual,actions):
 
                 
                 # Plotting the new position on the image.
-                image[1000 - int(new_position[1]/2), int(new_position[0]/2)]=0
+                image[1000-int(new_position[1]/2),int(new_position[0]/2)]=0
 
                 
                 resized_new_1 = cv2.resize(image, (640,640), fx=1, fy=1, interpolation=cv2.INTER_CUBIC)
@@ -383,8 +383,8 @@ def find_final_goal(goal_nodes, initial_pos, backinfo, image):
 
     ax.set_aspect('equal')
 
-    plt.xlim(0,300)
-    plt.ylim(0,300)
+    plt.xlim(0,1000)
+    plt.ylim(0,1000)
 
     plt.title('Vector Plot',fontsize=10)
 
