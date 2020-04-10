@@ -40,8 +40,8 @@ def space(distance):
 
     cv2.circle(blank_image, (300, 800), 100+distance, (255, 255, 255), -1)
     cv2.circle(blank_image, (500, 500), 100+distance, (255, 255, 255), -1)
-    cv2.circle(blank_image, (700, 800), 1000+distance, (255, 255, 255), -1)
-    cv2.circle(blank_image, (700, 200), 1000+distance, (255, 255, 255), -1)
+    cv2.circle(blank_image, (700, 800), 100+distance, (255, 255, 255), -1)
+    cv2.circle(blank_image, (700, 200), 100+distance, (255, 255, 255), -1)
 
     cv2.rectangle(blank_image,(25-distance,575+distance),(175+distance,425-distance),(255,255,255), -1)
     cv2.rectangle(blank_image,(225-distance,275+distance),(375+distance,125-distance),(255,255,255), -1)
@@ -62,7 +62,7 @@ def space(distance):
     return blank_image
 
 
-def differential_drive(RPM,position):
+def differential_drive(RPM,position,distance):
     
     L=35
     r=35/2
@@ -80,8 +80,14 @@ def differential_drive(RPM,position):
         x+=0.5*r*(ul+ur)*math.cos(theta)*dt
         y+=0.5*r*(ul+ur)*math.sin(theta)*dt
         theta+=(r/L)*(ul-ur)*dt
+        new_position=np.array([x,y,theta])
+
+        if check_movement(new_position,distance)== True:
+			return False,False
 
     theta=(180*theta/3.14)%360
+
+
 
     step_size=np.sqrt((x-position[0])**2+(y-position[1])**2)
 
@@ -95,12 +101,13 @@ def differential_drive(RPM,position):
 
 # Function to check if the points lie inside or outside the rectangle
 def check_squares(point,distance):
-    y=int(point[0])
-    x=int(point[1])
+    x=int(point[0])
+    y=int(point[1])
 
     square1=(y>=425-distance)*(y<=575+distance)*(x>=25-distance)*(x<=175+distance)
     square2=(y>=425-distance)*(y<=575+distance)*(x>=825-distance)*(x<=975+distance)
     square3=(y>=725-distance)*(y<=875+distance)*(x>=225-distance)*(x<=375+distance)
+
 
     if square1 or square2 or square3 == 1:  
         return True
@@ -122,6 +129,7 @@ def check_circles(point,distance):
     circle3=(dist <= 100+distance)
     dist = np.sqrt((x - 700)**2 + (y - 800)**2)
     circle4=(dist <= 100+distance)
+
     if circle1 or circle2 or circle3 or circle4==1:
         return True
     else:
@@ -134,7 +142,8 @@ def check_if_not_in_image(position, distance, max_x= 1000, max_y=1000):
     x = int(position[0])
     y = int(position[1])
 
-    if x<=distance or x>=max_x + distance or y<=distance or y>=max_y + distance ==True:
+
+    if (x<=distance) or (x>=max_x-distance) or (y<=distance) or (y>=max_y-distance) ==True:
         return True
 
     else:
@@ -148,7 +157,6 @@ def check_movement(position, distance):
     check1 = check_circles(position,distance)
     check2 = check_squares(position,distance)
 
-    # print(check0, check1, check2,check3, check4, check5)
 
     checkall = check0 or check1 or check2
 
@@ -163,7 +171,7 @@ def eucdist(current_pos, goal_pos):
     
     xi = current_pos[0]*euc
     yi = current_pos[1]*euc
-    ang = 3.14*current_pos[2]*(np.pi/6)/180
+    ang = current_pos[2]*(np.pi/6)
 
     pos_cur = np.array([xi,yi])
 
@@ -184,26 +192,23 @@ def eucdist(current_pos, goal_pos):
     return dist
 # Function to check the next move and output the cost of the movement along with the new position.
 def check_move(action, current_pos, distance):
-
     # Getting back the actual position from the index
     current_pos[0] = current_pos[0]*euc
     current_pos[1] = current_pos[1]*euc
-
     # New state containing the position and the angle of the checked action.
-    new_position,step_size= differential_drive(action,current_pos)
+    new_position,step_size= differential_drive(action,current_pos,distance)
 
     # Updating the cost with a uniform value of step size.
     cost = step_size
 
     # Checking if this movement lies inside an obstacle.
-    if check_movement(new_position,distance)==True:
-        new_position=False
-    else:
+
+    if new_position is not False:
     # Else, defining the new position according to the costmap visited node format.
         new_position = [int(new_position[0]/euc), int(new_position[1]/euc), int(new_position[2]/30)]
 
-    current_pos[0] = int(current_pos[0]/euc)
-    current_pos[1] = int(current_pos[1]/euc)
+        current_pos[0] = int(current_pos[0]/euc)
+        current_pos[1] = int(current_pos[1]/euc)
 
     # Returning the new position and the cost.
     return new_position, cost
@@ -231,8 +236,8 @@ def algorithm(image,initial_pos, goal,distance, start_time, visual,actions):
     nodes_visited=[]
 
     # Initializing costmap with infinite values
-    cost_map=np.inf*np.ones((1100,1100,12),dtype=np.uint8)
-    total_map=np.inf*np.ones((1100,1100,12),dtype=np.uint8)
+    cost_map=np.inf*np.ones((2000,2000,12))
+    total_map=np.inf*np.ones((2000,2000,12))
 
     # Initial position reformatted.
     # The theta value lies between (0 and 4)
@@ -245,9 +250,9 @@ def algorithm(image,initial_pos, goal,distance, start_time, visual,actions):
     queue.append(initial_pos)
 
     # Initialize the costmap at this position as 0.
+    
     cost_map[initial_pos[0,0], initial_pos[0,1], initial_pos[0,2]] = 0
     total_map[initial_pos[0,0], initial_pos[0,1], initial_pos[0,2]] = 0
-
     goal_time = 1
 
     # Goal position also reformatted.
@@ -266,7 +271,7 @@ def algorithm(image,initial_pos, goal,distance, start_time, visual,actions):
         for i in range(len(queue)):
             if total_map[queue[min][0][0],queue[min][0][1], queue[min][0][2]]>total_map[queue[i][0][0],queue[i][0][1], queue[i][0][2]]:
                 min=i
-
+        
         # Getting current node
         current_node=queue.pop(min)
 
@@ -278,21 +283,21 @@ def algorithm(image,initial_pos, goal,distance, start_time, visual,actions):
         
         # Converted to string for easy comparison.
         nodes_visited.append(str(current_node[0]))
-        print(current_position)
+       
 
         for action in actions:
 
             new_position, cost = check_move(action, current_position, distance)
-            
+
+
             if str(new_position) in nodes_visited:
                 continue
 
             # Checking if new position is valid.
             if new_position is not False:
-
                 
                 # Plotting the new position on the image.
-                image[1000-int(new_position[1]/2),int(new_position[0]/2)]=0
+                image[1000-int(new_position[1]*euc),int(new_position[0]*euc)]=0
 
                 
                 resized_new_1 = cv2.resize(image, (640,640), fx=1, fy=1, interpolation=cv2.INTER_CUBIC)
@@ -311,15 +316,19 @@ def algorithm(image,initial_pos, goal,distance, start_time, visual,actions):
                         print("--- {} seconds ---".format(time.time() - start_time))
 
                 # Updating the cost of the new position.
-                new_cost=cost_map[current_position[0], current_position[1], current_position[2]]+int(cost)
+
+
+                new_cost=cost_map[current_position[0], current_position[1], current_position[2]]+cost
 
                 # Updating the total cost with the euclidian distance heuristic.
+                
                 total_cost = new_cost + eucdist([new_position[0], new_position[1], new_position[2]], goal_position)
+
 
                 # Counting the number of times the goal is reached (12)
                 # if new_position[0]==goal_position[0] and new_position[1]==goal_position[1]:
-                print(eucdist(new_position,goal_position))
-                if eucdist(new_position,goal_position)<200:
+                
+                if eucdist(new_position,goal_position)<400:
                     print("Reached {} time".format(goal_time))
                     goal_time = goal_time + 1
                     goal_nodes.append([current_node, new_cost])
@@ -367,8 +376,7 @@ def find_final_goal(goal_nodes, initial_pos, backinfo, image):
         for i in range(len(backinfo)):
             if str(parent)==str(backinfo[i][0]):
                 new_node = backinfo[i]
-                # Not plotting the initial node of the costmap (0,0)
-                print(new_node[0][0],new_node[0][1], new_node[1][0], new_node[1][1])
+
                 if new_node[1][0]!=0:
                     # Plotting Arrow
                     plt.arrow(new_node[0][0], new_node[0][1], new_node[1][0] - new_node[0][0], new_node[1][1] - new_node[0][1],
@@ -383,8 +391,8 @@ def find_final_goal(goal_nodes, initial_pos, backinfo, image):
 
     ax.set_aspect('equal')
 
-    plt.xlim(0,1000)
-    plt.ylim(0,1000)
+    plt.xlim(0,2000)
+    plt.ylim(0,2000)
 
     plt.title('Vector Plot',fontsize=10)
 
@@ -408,8 +416,8 @@ def main():
     # yi=input("Enter initial y coordinate:  ")
     # thetai=input("Enter initial theta:  ")
 
-    xi=100
-    yi=100
+    xi=50
+    yi=50
     thetai=30
 
     initial_pos=np.array([xi,yi,thetai])
@@ -418,8 +426,8 @@ def main():
     # yf=input("Enter goal y coordinate:  ")
     # thetaf=input("Enter goal theta:  ")
 
-    xf=150
-    yf=200
+    xf=500
+    yf=350
     thetaf=30
 
 
@@ -430,8 +438,8 @@ def main():
     # RPM1=input("Enter first wheel RPM velocity: ")
     # RPM2=input("Enter second wheel RPM velocity: ")
 
-    RPM1=1
-    RPM2=1
+    RPM1=4
+    RPM2=3
 
     if visual==None:
         print("No visualization selected! There will only be a plot at the end! If you want visuals, add --viz True")
@@ -440,8 +448,7 @@ def main():
     actions=[[0,RPM1],[RPM1,0],[RPM1,RPM1],[0,RPM2],[RPM2,0],[RPM2,RPM2],[RPM1,RPM2],[RPM2,RPM1]]
 
     #Turtlebot radius from datasheet
-    radius=35/2
-
+    radius=35.4/2
     #Wheel distance from datasheet, assumed 354 mm as in datasheet
     L=35
 
