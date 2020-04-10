@@ -63,13 +63,14 @@ def space(distance):
 
 
 def differential_drive(RPM,position,distance):
+
     
     L=35
     r=35/2
     t=0
     dt=0.1
-    x=position[0]
-    y=position[1]
+    x=position[0]*euc
+    y=position[1]*euc
     theta=3.14*position[2]/180*30
 
     ul=RPM[0]
@@ -85,11 +86,14 @@ def differential_drive(RPM,position,distance):
         if check_movement(new_position,distance)== True:
 			return False,False
 
-    theta=(180*theta/3.14)%360
+    theta=int((180*theta/3.14)%360)
 
 
 
     step_size=np.sqrt((x-position[0])**2+(y-position[1])**2)
+
+    x=round(x)
+    y=round(y)
 
     new_position=np.array([x,y,theta])
 
@@ -192,9 +196,8 @@ def eucdist(current_pos, goal_pos):
     return dist
 # Function to check the next move and output the cost of the movement along with the new position.
 def check_move(action, current_pos, distance):
-    # Getting back the actual position from the index
-    current_pos[0] = current_pos[0]*euc
-    current_pos[1] = current_pos[1]*euc
+   
+
     # New state containing the position and the angle of the checked action.
     new_position,step_size= differential_drive(action,current_pos,distance)
 
@@ -205,10 +208,8 @@ def check_move(action, current_pos, distance):
 
     if new_position is not False:
     # Else, defining the new position according to the costmap visited node format.
-        new_position = [int(new_position[0]/euc), int(new_position[1]/euc), int(new_position[2]/30)]
 
-        current_pos[0] = int(current_pos[0]/euc)
-        current_pos[1] = int(current_pos[1]/euc)
+        new_position = [int(new_position[0]/euc), int(new_position[1]/euc), int(new_position[2]/30)]
 
     # Returning the new position and the cost.
     return new_position, cost
@@ -287,6 +288,7 @@ def algorithm(image,initial_pos, goal,distance, start_time, visual,actions):
 
         for action in actions:
 
+
             new_position, cost = check_move(action, current_position, distance)
 
 
@@ -320,15 +322,16 @@ def algorithm(image,initial_pos, goal,distance, start_time, visual,actions):
 
                 new_cost=cost_map[current_position[0], current_position[1], current_position[2]]+cost
 
+                
+
                 # Updating the total cost with the euclidian distance heuristic.
                 
                 total_cost = new_cost + eucdist([new_position[0], new_position[1], new_position[2]], goal_position)
 
-
                 # Counting the number of times the goal is reached (12)
                 # if new_position[0]==goal_position[0] and new_position[1]==goal_position[1]:
                 
-                if eucdist(new_position,goal_position)<400:
+                if eucdist(new_position,goal_position)<100:
                     print("Reached {} time".format(goal_time))
                     goal_time = goal_time + 1
                     goal_nodes.append([current_node, new_cost])
@@ -426,8 +429,8 @@ def main():
     # yf=input("Enter goal y coordinate:  ")
     # thetaf=input("Enter goal theta:  ")
 
-    xf=500
-    yf=350
+    xf=100
+    yf=300
     thetaf=30
 
 
