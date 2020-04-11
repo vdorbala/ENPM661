@@ -84,13 +84,13 @@ def differential_drive(RPM,position,distance):
         new_position=np.array([x,y,theta])
 
         if check_movement(new_position,distance)== True:
-			return False,False
+            return False,False
 
     theta=int((180*theta/3.14)%360)
 
 
 
-    step_size=np.sqrt((x-position[0])**2+(y-position[1])**2)
+    step_size=np.sqrt((x-position[0])**2+(y-position[1])**2)/2
 
     x=round(x)
     y=round(y)
@@ -237,8 +237,8 @@ def algorithm(image,initial_pos, goal,distance, start_time, visual,actions):
     nodes_visited=[]
 
     # Initializing costmap with infinite values
-    cost_map=np.inf*np.ones((2000,2000,12))
-    total_map=np.inf*np.ones((2000,2000,12))
+    cost_map=np.inf*np.ones((1000,1000,12))
+    total_map=np.inf*np.ones((1000,1000,12))
 
     # Initial position reformatted.
     # The theta value lies between (0 and 4)
@@ -331,7 +331,7 @@ def algorithm(image,initial_pos, goal,distance, start_time, visual,actions):
                 # Counting the number of times the goal is reached (12)
                 # if new_position[0]==goal_position[0] and new_position[1]==goal_position[1]:
                 
-                if eucdist(new_position,goal_position)<100:
+                if eucdist(new_position,goal_position)<10:
                     print("Reached {} time".format(goal_time))
                     goal_time = goal_time + 1
                     goal_nodes.append([current_node, new_cost])
@@ -394,8 +394,8 @@ def find_final_goal(goal_nodes, initial_pos, backinfo, image):
 
     ax.set_aspect('equal')
 
-    plt.xlim(0,2000)
-    plt.ylim(0,2000)
+    plt.xlim(0,1000)
+    plt.ylim(0,1000)
 
     plt.title('Vector Plot',fontsize=10)
 
@@ -429,8 +429,8 @@ def main():
     # yf=input("Enter goal y coordinate:  ")
     # thetaf=input("Enter goal theta:  ")
 
-    xf=100
-    yf=300
+    xf=900
+    yf=900
     thetaf=30
 
 
@@ -441,8 +441,8 @@ def main():
     # RPM1=input("Enter first wheel RPM velocity: ")
     # RPM2=input("Enter second wheel RPM velocity: ")
 
-    RPM1=4
-    RPM2=3
+    RPM1=10
+    RPM2=15
 
     if visual==None:
         print("No visualization selected! There will only be a plot at the end! If you want visuals, add --viz True")
@@ -497,7 +497,7 @@ if __name__ == '__main__':
 
 
     # Euclidian Distance threshold
-    euc = 0.5
+    euc = 1
 
 
     main()
