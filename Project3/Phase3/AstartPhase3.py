@@ -61,7 +61,7 @@ def space(distance):
 
     return blank_image
 
-
+#Create the new nodes considering the non-holonomic constraints and the RPM velocities
 def differential_drive(RPM,position,distance):
 
     
@@ -82,7 +82,7 @@ def differential_drive(RPM,position,distance):
         y+=0.5*r*(ul+ur)*math.sin(theta)*dt
         theta+=(r/L)*(ul-ur)*dt
         new_position=np.array([x,y,theta])
-
+#check if each derivative incremental is inside an obstacle
         if check_movement(new_position,distance)== True:
             return False,False
 
