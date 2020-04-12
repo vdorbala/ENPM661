@@ -1,0 +1,35 @@
+This is the RoS workspace for the simulations. In order to run this, please perform the following:
+
+Place this folder in the src folder of your catkin workspace.
+
+Run "catkin build ros_ws" to build the workspace.
+
+Source the setup.bash or setup.zsh file in the /devel folder of your catkin workspace.
+
+Use "source ~/Path-to-catkin-workspace/devel/setup.bash" to do this.
+
+
+After this, give read, write and execute permissions to the python script in the "scripts" folder as:
+
+"chmod 777 TurtlebotAstart_simulation.py"
+
+!!DO NOT FORGET TO PERFORM THIS STEP!!
+
+
+Both video 1 and video 2 require different input parameters. Unfortunately, these cannot be passed to the python script via the launch file due to the limitations of RoS.
+
+Hence, we make use of environment variables to pass these parameters from the launch file.
+
+In order to do this, we need to edit the launch file as follows:
+
+	For video 1, Choose option 1 in the launch file, and uncomment the corressponding lines.
+
+	For video 2, uncomment the other set of lines.
+
+After this is done, run the launch file in the workspace as follows:
+
+"roslaunch simulation.launch"
+
+This should open up gazebo with the turtlebot in the initial position, and after a while a graph should come up.
+
+CLOSE THIS GRAPH TO START THE SIMULATION!
