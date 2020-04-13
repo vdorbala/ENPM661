@@ -9,6 +9,7 @@ import math
 import argparse
 import matplotlib.pyplot as plt
 import rospy
+import os
 
 from geometry_msgs.msg import Twist
 
@@ -353,7 +354,7 @@ def algorithm(image,initial_pos, goal,distance, start_time, visual,actions):
     return goal_nodes, visited_info
 
 # Publishing the action
-def publish_actions(action_list):
+def publish_actions(action_list, video_num):
 
     # Reversing the list for the correct order.
     action_list = action_list[::-1]
@@ -366,14 +367,33 @@ def publish_actions(action_list):
     r_rob = 0.177
 
     # Scaling factors since our map is 1000x1000, and the Gazebo map is much larger
-    scale_lin = 1.5 # 1.6, 1.5
-    scale_ang = 1.1 # 1.2, 1.1
+    # These scaling factors change based on the initial and final targets. This is because the output simulation has a different dimension as opposed to our inputs.
+    
 
-    lower_lin = 0   # 0, 0
-    upper_lin = 0.8 # 0.8, 0.8
+    # The comments for each of these parameters is given for # Video1, Video2
+    print("Video number is {}".format(video_num))
 
-    lower_ang = 0   # 0, 0
-    upper_ang = 0.8 # 1.3, 0.8
+    if video_num==1:
+
+        scale_lin = 1.6 
+        scale_ang = 1.2 
+
+        lower_lin = 0   
+        upper_lin = 0.8 
+
+        lower_ang = 0   
+        upper_ang = 1.3 
+
+    else:
+
+        scale_lin = 1.5 
+        scale_ang = 1.1 
+
+        lower_lin = 0   
+        upper_lin = 0.8 
+
+        lower_ang = 0   
+        upper_ang = 0.8
 
     for action in action_list:
 
@@ -427,7 +447,7 @@ def find_action(parent,current,distance,actions):
 
 
 # Function for finding the goal with the least cost and backtracing the path from the goal to the input
-def find_final_goal(goal_nodes, initial_pos, backinfo, image, distance, actions):
+def find_final_goal(goal_nodes, initial_pos, backinfo, image, distance, actions, video_num):
 
     print("Plotting path")
     goal_nodes = np.array(goal_nodes)
@@ -484,7 +504,7 @@ def find_final_goal(goal_nodes, initial_pos, backinfo, image, distance, actions)
     print("The actions are {}".format(action_array))
 
     # Publishing the actions to a rostopic
-    publish_actions(action_array)
+    publish_actions(action_array, video_num)
 
     return end_time
 
@@ -496,40 +516,63 @@ def main():
     
     # visual = args.viz
 
+    video_num = int(os.environ['Videonum'])
+
     start_time = time.time()
 
     # xi=input("Enter initial x coordinate:  ")
     # yi=input("Enter initial y coordinate:  ")
     # thetai=input("Enter initial theta:  ")
 
+    # Inputs for Video 1
     # 100, 200
-    # 50, 50
-    xi = 50
-    yi = 50
-    thetai = 0
 
-    initial_pos=np.array([xi,yi,thetai])
+    # Inputs for Video 2
+    # 50, 50 
+
+    if (video_num == 2):
+        xi = 50
+        yi = 50
+        thetai = 0
+
+        initial_pos=np.array([xi,yi,thetai])
+
+        xf = 930
+        yf = 750
+        thetaf = 0
+
+        goal_pos=np.array([xf,yf,thetaf])
+
+    else:
+
+        xi = 100
+        yi = 200
+        thetai = 0
+
+        initial_pos=np.array([xi,yi,thetai])
+
+        xf = 500
+        yf = 200
+        thetaf = 0
+
+        goal_pos=np.array([xf,yf,thetaf])
 
     # xf=input("Enter goal x coordinate:  ")
     # yf=input("Enter goal y coordinate:  ")
     # thetaf=input("Enter goal theta:  ")
 
+    # Inputs for Video 1
     # 500, 200
+
+    # Inputs for Video 2
     # 930, 750
-    xf = 930
-    yf = 750
-    thetaf = 0
-
-
-
-    goal_pos=np.array([xf,yf,thetaf])
 
     #Input wheel velocities in RPM
     # RPM1=input("Enter first wheel RPM velocity: ")
     # RPM2=input("Enter second wheel RPM velocity: ")
 
-    RPM1 = 10
-    RPM2 = 10
+    RPM1 = int(os.environ['rpm1'])
+    RPM2 = int(os.environ['rpm2'])
 
     if visual==None:
         print("No visualization selected! There will only be a plot at the end! If you want visuals, add --viz True")
@@ -547,8 +590,6 @@ def main():
     clearance=10
 
     distance=int(radius+clearance)
-
-
 
     print("Chosen initial and final coordinates are, [{} {}] and [{} {}]".format(xi, yi, xf, yf))
 
@@ -572,7 +613,7 @@ def main():
     goal_nodes, backinfo = algorithm(img, initial_pos, goal_pos, distance, start_time, visual,actions)
 
     # Finding and backtracing the path.
-    end_time = find_final_goal(goal_nodes, initial_pos, backinfo, img, distance, actions)
+    end_time = find_final_goal(goal_nodes, initial_pos, backinfo, img, distance, actions, video_num)
 
     print("Total time taken is {} seconds ---".format(end_time - start_time))
 
@@ -583,7 +624,9 @@ if __name__ == '__main__':
 
     # parser = argparse.ArgumentParser(description='Parsing arguments')
     # parser.add_argument('--viz', help='For visualization set this to true')
-
+    # parser.add_argument('--vid', help='For videos')
+    # parser.add_argument('--rpm1', help='For rpm1')
+    # parser.add_argument('--rpm2', help='For rpm2')
     # Euclidian Distance threshold
     euc = 1
 
